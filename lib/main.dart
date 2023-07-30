@@ -17,12 +17,16 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: MyHomePage(title: "My Database"),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  String title;
+
+  MyHomePage({required this.title});
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -31,16 +35,24 @@ class _MyHomePageState extends State<MyHomePage> {
   late AppDataBase myDB;
   List<Map<String, dynamic>> arrNotes = [];
 
+  var titleController = TextEditingController();
+  var descController = TextEditingController();
+
   @override
   initState() {
     super.initState();
     myDB = AppDataBase.db;
 
-    addNotes();
+    getNotes();
   }
 
-  void addNotes() async {
-    bool check = await myDB.addNote("Flutter", "new flutter note");
+  void getNotes() async {
+    arrNotes = await myDB.fetchAllNotes();
+    setState((){});
+  }
+
+  void addNotes(String title, String desc) async {
+    bool check = await myDB.addNote(title, desc);
 
     if (check) {
       arrNotes = await myDB.fetchAllNotes();
@@ -52,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Database'),
+          title: Text('${widget.title}'),
         ),
         body: ListView.builder(
             itemCount: arrNotes.length,
@@ -61,9 +73,44 @@ class _MyHomePageState extends State<MyHomePage> {
                   title: Text('${arrNotes[index]['title']}'),
                   subtitle: Text('${arrNotes[index]['desc']}'));
             }),
-        floatingActionButton: FloatingActionButton(onPressed: () {
-          addNotes();
-        }, child: Icon(Icons.add)
-        ));
+        floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return Container(
+                        height: 400,
+                        child: Column(children: [
+                          Text('Add Note', style: TextStyle(fontSize: 21)),
+                          TextField(
+                            controller: titleController,
+                            decoration: InputDecoration(
+                                hintText: 'Enter Title',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(21.0))),
+                          ),
+                          TextField(
+                            controller: descController,
+                            decoration: InputDecoration(
+                                hintText: 'Enter Desc',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(21.0))),
+                          ),
+                          ElevatedButton(
+                            child: Text('Add'),
+                            onPressed: (){
+                              var title = titleController.text.toString();
+                              var desc = descController.text.toString();
+
+                              addNotes(title, desc);
+                              titleController.text = "";
+                              descController.clear();
+                              Navigator.pop(context);
+                            }
+                          ),
+                        ]));
+                  });
+            },
+            child: Icon(Icons.add)));
   }
 }

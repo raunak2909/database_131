@@ -11,6 +11,13 @@ class AppDataBase{
 
   //database variable
   Database? _database;
+  //note(
+  static final NOTE_TABLE = "note";
+  static final NOTE_COLUMN_ID = "note_id";
+  static final NOTE_COLUMN_TITLE = "title";
+  static final NOTE_COLUMN_DESC = "desc";
+
+
 
   Future<Database> getDB() async{
     if(_database != null){
@@ -21,6 +28,7 @@ class AppDataBase{
   }
 
   Future<Database> initDB() async{
+
     Directory documentDirectory = await getApplicationDocumentsDirectory();
 
     var dbPath = join(documentDirectory.path, "noteDB.db");
@@ -28,10 +36,10 @@ class AppDataBase{
     return openDatabase(
       dbPath,
       version: 1,
-      onCreate: (db, version){
+      onCreate: (db, version) async{
 
         //create tables here
-        db.execute("Create table note ( note_id integer primary key autoincrement, title text, desc text )");
+        db.execute("Create table $NOTE_TABLE ( $NOTE_COLUMN_ID integer primary key autoincrement, $NOTE_COLUMN_TITLE text, $NOTE_COLUMN_DESC text )");
 
       }
     );
@@ -43,7 +51,7 @@ class AppDataBase{
 
     var db = await getDB();
 
-    int rowsEffect = await db.insert('note', {'title' : title, 'desc' : desc});
+    int rowsEffect = await db.insert(NOTE_TABLE, { NOTE_COLUMN_TITLE : title, NOTE_COLUMN_DESC : desc});
 
     if(rowsEffect>0){
       return true;
@@ -56,7 +64,7 @@ class AppDataBase{
   Future<List<Map<String, dynamic>>> fetchAllNotes() async{
     var db = await getDB();
 
-    List<Map<String, dynamic>> notes = await db.query('note');
+    List<Map<String, dynamic>> notes = await db.query(NOTE_TABLE);
 
     return notes;
   }
