@@ -25,7 +25,8 @@ class AppDataBase{
     if(_database != null){
       return _database!;
     } else {
-      return await initDB();
+      _database = await initDB();
+      return _database!;
     }
   }
 
@@ -40,7 +41,7 @@ class AppDataBase{
       version: 1,
       onCreate: (db, version) async{
         //create tables here
-        db.execute("Create table $NOTE_TABLE ( $NOTE_COLUMN_ID integer primary key autoincrement, $NOTE_COLUMN_TITLE text, $NOTE_COLUMN_DESC text )");
+        db.execute("Create table $NOTE_TABLE ( $NOTE_COLUMN_ID integer primary key autoincrement, $NOTE_COLUMN_TITLE text, $NOTE_COLUMN_DESC text)");
       }
     );
 
